@@ -41,7 +41,15 @@ protected:
   void visit(const Sqrt*);
   void visit(const Store*);
   void visit(const Assign*);
-
+  void visit(const Load*);
+  void visit(const Literal*);
+  void visit(const Cast*);
+  void visit(const IfThenElse*);
+  void visit(const Free*);
+  void visit(const Sort*);
+  void visit(const Print*);
+  void visit(const Continue*);
+  void visit(const Break*);
   std::map<Expr, std::string, ExprCompare> varMap;
   std::vector<Expr> localVars;
   std::ostream &out;

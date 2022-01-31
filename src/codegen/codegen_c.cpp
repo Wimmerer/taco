@@ -25,114 +25,73 @@ namespace {
 // MIN preprocessor macro
 // This *must* be kept in sync with taco_tensor_t.h
 const string cHeaders =
-  "#ifndef TACO_C_HEADERS\n"
-  "#define TACO_C_HEADERS\n"
-  "#include <stdio.h>\n"
-  "#include <stdlib.h>\n"
-  "#include <stdint.h>\n"
-  "#include <stdbool.h>\n"
-  "#include <math.h>\n"
-  "#include <complex.h>\n"
-  "#include <string.h>\n"
-  "#define TACO_MIN(_a,_b) ((_a) < (_b) ? (_a) : (_b))\n"
-  "#define TACO_MAX(_a,_b) ((_a) > (_b) ? (_a) : (_b))\n"
-  "#define TACO_DEREF(_a) (((___context___*)(*__ctx__))->_a)\n"
-  "#ifndef TACO_TENSOR_T_DEFINED\n"
-  "#define TACO_TENSOR_T_DEFINED\n"
-  "typedef enum { taco_mode_dense, taco_mode_sparse } taco_mode_t;\n"
-  "typedef struct {\n"
-  "  int32_t      order;         // tensor order (number of modes)\n"
-  "  int32_t*     dimensions;    // tensor dimensions\n"
-  "  int32_t      csize;         // component size\n"
-  "  int32_t*     mode_ordering; // mode storage ordering\n"
-  "  taco_mode_t* mode_types;    // mode storage types\n"
-  "  uint8_t***   indices;       // tensor index data (per mode)\n"
-  "  uint8_t*     vals;          // tensor values\n"
-  "  uint8_t*     fill_value;    // tensor fill value\n"
-  "  int32_t      vals_size;     // values array size\n"
-  "} taco_tensor_t;\n"
-  "#endif\n"
-  "int cmp(const void *a, const void *b) {\n"
-  "  return *((const int*)a) - *((const int*)b);\n"
-  "}\n"
-  "int taco_binarySearchAfter(int *array, int arrayStart, int arrayEnd, int target) {\n"
-  "  if (array[arrayStart] >= target) {\n"
-  "    return arrayStart;\n"
-  "  }\n"
-  "  int lowerBound = arrayStart; // always < target\n"
-  "  int upperBound = arrayEnd; // always >= target\n"
-  "  while (upperBound - lowerBound > 1) {\n"
-  "    int mid = (upperBound + lowerBound) / 2;\n"
-  "    int midValue = array[mid];\n"
-  "    if (midValue < target) {\n"
-  "      lowerBound = mid;\n"
-  "    }\n"
-  "    else if (midValue > target) {\n"
-  "      upperBound = mid;\n"
-  "    }\n"
-  "    else {\n"
-  "      return mid;\n"
-  "    }\n"
-  "  }\n"
-  "  return upperBound;\n"
-  "}\n"
-  "int taco_binarySearchBefore(int *array, int arrayStart, int arrayEnd, int target) {\n"
-  "  if (array[arrayEnd] <= target) {\n"
-  "    return arrayEnd;\n"
-  "  }\n"
-  "  int lowerBound = arrayStart; // always <= target\n"
-  "  int upperBound = arrayEnd; // always > target\n"
-  "  while (upperBound - lowerBound > 1) {\n"
-  "    int mid = (upperBound + lowerBound) / 2;\n"
-  "    int midValue = array[mid];\n"
-  "    if (midValue < target) {\n"
-  "      lowerBound = mid;\n"
-  "    }\n"
-  "    else if (midValue > target) {\n"
-  "      upperBound = mid;\n"
-  "    }\n"
-  "    else {\n"
-  "      return mid;\n"
-  "    }\n"
-  "  }\n"
-  "  return lowerBound;\n"
-  "}\n"
-  "taco_tensor_t* init_taco_tensor_t(int32_t order, int32_t csize,\n"
-  "                                  int32_t* dimensions, int32_t* mode_ordering,\n"
-  "                                  taco_mode_t* mode_types) {\n"
-  "  taco_tensor_t* t = (taco_tensor_t *) malloc(sizeof(taco_tensor_t));\n"
-  "  t->order         = order;\n"
-  "  t->dimensions    = (int32_t *) malloc(order * sizeof(int32_t));\n"
-  "  t->mode_ordering = (int32_t *) malloc(order * sizeof(int32_t));\n"
-  "  t->mode_types    = (taco_mode_t *) malloc(order * sizeof(taco_mode_t));\n"
-  "  t->indices       = (uint8_t ***) malloc(order * sizeof(uint8_t***));\n"
-  "  t->csize         = csize;\n"
-  "  for (int32_t i = 0; i < order; i++) {\n"
-  "    t->dimensions[i]    = dimensions[i];\n"
-  "    t->mode_ordering[i] = mode_ordering[i];\n"
-  "    t->mode_types[i]    = mode_types[i];\n"
-  "    switch (t->mode_types[i]) {\n"
-  "      case taco_mode_dense:\n"
-  "        t->indices[i] = (uint8_t **) malloc(1 * sizeof(uint8_t **));\n"
-  "        break;\n"
-  "      case taco_mode_sparse:\n"
-  "        t->indices[i] = (uint8_t **) malloc(2 * sizeof(uint8_t **));\n"
-  "        break;\n"
-  "    }\n"
-  "  }\n"
-  "  return t;\n"
-  "}\n"
-  "void deinit_taco_tensor_t(taco_tensor_t* t) {\n"
-  "  for (int i = 0; i < t->order; i++) {\n"
-  "    free(t->indices[i]);\n"
-  "  }\n"
-  "  free(t->indices);\n"
-  "  free(t->dimensions);\n"
-  "  free(t->mode_ordering);\n"
-  "  free(t->mode_types);\n"
-  "  free(t);\n"
-  "}\n"
-  "#endif\n";
+  "@enum TacoMode dense sparse\n"
+  "struct TacoTensor{Tv}\n"
+  "   order::Int32         // tensor order (number of modes)\n"
+  "   dimensions::Vector{Int64}    // tensor dimensions\n"
+  "   mode_ordering::Vector{Int32} // mode storage ordering\n"
+  "   mode_types::Vector{TacoMode}    // mode storage types\n"
+  "   indices::Vector{Vector{Vector{Int64}}}       // tensor index data (per mode)\n"
+  "   vals::Vector{Tv}          // tensor values\n"
+  "   fill_value::Tv    // tensor fill value\n"
+  "end\n"
+  "binarySearchAfter(array, arrayStart, arrayEnd, target)\n"
+  "  if (array[arrayStart] >= target)\n"
+  "    return arrayStart\n"
+  "  end\n"
+  "     lowerBound = arrayStart // always < target\n"
+  "     upperBound = arrayEnd // always >= target\n"
+  "  while (upperBound - lowerBound > 1)\n"
+  "     mid = (upperBound + lowerBound) / 2\n"
+  "     midValue = array[mid]\n"
+  "     if (midValue < target)\n"
+  "         lowerBound = mid\n"
+  "     elseif midValue > target\n"
+  "         upperBound = mid\n"
+  "     else\n"
+  "      return mid\n"
+  "     end\n"
+  "  end\n"
+  "  return upperBound\n"
+  "end\n"
+  "binarySearchBefore(array, arrayStart, arrayEnd, target)\n"
+  "  if (array[arrayStart] <= target)\n"
+  "    return arrayStart\n"
+  "  end\n"
+  "     lowerBound = arrayStart // always <= target\n"
+  "     upperBound = arrayEnd // always > target\n"
+  "  while (upperBound - lowerBound > 1)\n"
+  "     mid = (upperBound + lowerBound) / 2\n"
+  "     midValue = array[mid]\n"
+  "     if (midValue < target)\n"
+  "         lowerBound = mid\n"
+  "     elseif midValue > target\n"
+  "         upperBound = mid\n"
+  "     else\n"
+  "      return mid\n"
+  "     end\n"
+  "  end\n"
+  "  return lowerBound\n"
+  "end\n"
+  "TacoTensor(order, dimensions, modeordering, modetypes, fill::Tv) where {Tv}\n"
+  "    t = TacoTensor{Tv}(\n"
+  "      order,\n"
+  "      dimensions,\n"
+  "      modeordering,\n"
+  "      modetypes,\n"
+  "      Vector{Vector{Vector{Int64}}}(undef, order),\n"
+  "      fill\n"
+  "    )\n"
+  "\n"
+  "    for i in 1:order\n"
+  "        if t.modetypes[i] == dense\n"
+  "            t.indices[i] = Vector{Vector{Int64}}(undef, 1)\n"
+  "        else\n"
+  "          t.indices[i] = Vector{Vector{Int64}}(undef, 2)\n"
+  "        end\n"
+  "    end\n"
+  "    return t\n"
+  "end\n";
 } // anonymous namespace
 
 // find variables for generating declarations
@@ -252,11 +211,6 @@ void CodeGen_C::compile(Stmt stmt, bool isFirst) {
 }
 
 void CodeGen_C::visit(const Function* func) {
-  // if generating a header, protect the function declaration with a guard
-  if (outputKind == HeaderGen) {
-    out << "#ifndef TACO_GENERATED_" << func->name << "\n";
-    out << "#define TACO_GENERATED_" << func->name << "\n";
-  }
 
   int numYields = countYields(func);
   emittingCoroutine = (numYields > 0);
@@ -273,14 +227,7 @@ void CodeGen_C::visit(const Function* func) {
   doIndent();
   out << printFuncName(func, inputVarFinder.varDecls, outputVarFinder.varDecls);
 
-  // if we're just generating a header, this is all we need to do
-  if (outputKind == HeaderGen) {
-    out << ";\n";
-    out << "#endif\n";
-    return;
-  }
-
-  out << " {\n";
+  out << "\n";
 
   indent++;
 
@@ -311,24 +258,124 @@ void CodeGen_C::visit(const Function* func) {
   }
 
   doIndent();
-  out << "return 0;\n";
+  out << "return nothing\n";
   indent--;
 
   doIndent();
-  out << "}\n";
+  out << "end\n";
+}
+
+void CodeGen_C::visit(const Load* op) {
+  parentPrecedence = Precedence::LOAD;
+  op->arr.accept(this);
+  stream << "[";
+  parentPrecedence = Precedence::LOAD;
+  if(isa<Literal>(op->loc)){
+    auto lit = op->loc.as<Literal>();
+    if(lit->type.getKind() == Int32) {
+      auto val = lit->getValue<int>();
+      stream << val + 1;
+    }
+    else if(lit->type.getKind() == UInt32) {
+        auto val = lit->getValue<unsigned int>();
+        stream << val + 1;
+    }
+    else
+      op->loc.accept(this);
+    }
+  else {
+    op->loc.accept(this);
+  }
+  stream << "]";
+}
+
+void CodeGen_C::visit(const Literal* op) {
+  switch (op->type.getKind()) {
+    case Datatype::Complex64: {
+      std::complex<float> val = op->getValue<std::complex<float>>();
+      stream << val.real() << "+ " << val.imag() << "im";
+    }
+    break;
+    case Datatype::Complex128: {
+      std::complex<double> val = op->getValue<std::complex<double>>();
+      stream << val.real() << "+ " << val.imag() << "im";
+    }
+    break;
+    default: {
+      IRPrinter::visit(op);
+    }
+  }
+}
+
+// We typically don't need to cast anymore for Julia, although this needs to be double checked, we can always do this as a reinterp.
+void CodeGen_C::visit(const Cast* op) {
+  // stream << "(" << keywordString(util::toString(op->type)) << ")";
+  // parentPrecedence = Precedence::CAST;
+  // op->a.accept(this);
+  stream << "";
+}
+
+
+void CodeGen_C::visit(const IfThenElse* op) {
+  taco_iassert(op->cond.defined());
+  taco_iassert(op->then.defined());
+  doIndent();
+  stream << keywordString("if ");
+  stream << " ";
+  parentPrecedence = Precedence::TOP;
+  op->cond.accept(this);
+
+  Stmt scopedStmt = Stmt(to<Scope>(op->then)->scopedStmt);
+  if (isa<Block>(scopedStmt)) {
+    stream << "\n" << endl;
+    op->then.accept(this);
+    doIndent();
+    stream << "end";
+  }
+  else if (isa<Assign>(scopedStmt)) {
+    int tmp = indent;
+    indent = 0;
+    stream << " ";
+    scopedStmt.accept(this);
+    indent = tmp;
+  }
+  else {
+    stream << endl;
+    op->then.accept(this);
+  }
+
+  if (op->otherwise.defined()) {
+    stream << "\n";
+    doIndent();
+    stream << keywordString("else");
+    stream << "\n";
+    op->otherwise.accept(this);
+    doIndent();
+    stream << "end";
+  }
+  stream << endl;
 }
 
 void CodeGen_C::visit(const VarDecl* op) {
+  doIndent();
   if (emittingCoroutine) {
-    doIndent();
     op->var.accept(this);
     parentPrecedence = Precedence::TOP;
     stream << " = ";
     op->rhs.accept(this);
-    stream << ";";
     stream << endl;
-  } else {
-    IRPrinter::visit(op);
+  } 
+  else {
+    string varName = varNameGenerator.getUniqueName(util::toString(op->var));
+    varNames.insert({op->var, varName});
+    op->var.accept(this);
+    stream << "::";
+    stream << printCType(op->var.type(), to<Var>(op->var)->is_ptr);
+    taco_iassert(isa<Var>(op->var));
+    parentPrecedence = Precedence::TOP;
+    stream << " = ";
+    op->rhs.accept(this);
+    stream << endl;
   }
 }
 
@@ -353,33 +400,33 @@ void CodeGen_C::visit(const Var* op) {
 static string genVectorizePragma(int width) {
   stringstream ret;
   ret << "#pragma clang loop interleave(enable) ";
-  if (!width)
-    ret << "vectorize(enable)";
-  else
-    ret << "vectorize_width(" << width << ")";
+  //if (!width)
+  //  ret << "vectorize(enable)";
+  //else
+  //  ret << "vectorize_width(" << width << ")";
 
   return ret.str();
 }
 
 static string getParallelizePragma(LoopKind kind) {
   stringstream ret;
-  ret << "#pragma omp parallel for schedule";
-  switch (kind) {
-    case LoopKind::Static:
-      ret << "(static, 1)";
-      break;
-    case LoopKind::Dynamic:
-      ret << "(dynamic, 1)";
-      break;
-    case LoopKind::Runtime:
-      ret << "(runtime)";
-      break;
-    case LoopKind::Static_Chunked:
-      ret << "(static)";
-      break;
-    default:
-      break;
-  }
+  ret << "Threads.@threads";
+  // switch (kind) {
+  //   case LoopKind::Static:
+  //     ret << "(static, 1)";
+  //     break;
+  //   case LoopKind::Dynamic:
+  //     ret << "(dynamic, 1)";
+  //     break;
+  //   case LoopKind::Runtime:
+  //     ret << "(runtime)";
+  //     break;
+  //   case LoopKind::Static_Chunked:
+  //     ret << "(static)";
+  //     break;
+  //   default:
+  //     break;
+  // }
   return ret.str();
 }
 
@@ -409,7 +456,6 @@ void CodeGen_C::visit(const For* op) {
     case LoopKind::Static_Chunked:
       doIndent();
       out << getParallelizePragma(op->kind);
-      out << "\n";
       break;
     default:
       if (op->unrollFactor > 0) {
@@ -418,37 +464,60 @@ void CodeGen_C::visit(const For* op) {
       }
       break;
   }
-
+  
   doIndent();
-  stream << keywordString("for") << " (";
-  if (!emittingCoroutine) {
-    stream << keywordString(util::toString(op->var.type())) << " ";
-  }
+  stream << keywordString("for") << " ";
   op->var.accept(this);
-  stream << " = ";
-  op->start.accept(this);
-  stream << keywordString("; ");
-  op->var.accept(this);
-  stream << " < ";
-  parentPrecedence = BOTTOM;
-  op->end.accept(this);
-  stream << keywordString("; ");
-  op->var.accept(this);
-
-  auto lit = op->increment.as<Literal>();
-  if (lit != nullptr && ((lit->type.isInt()  && lit->equalsScalar(1)) ||
-                         (lit->type.isUInt() && lit->equalsScalar(1)))) {
-    stream << "++";
-  }
+  // Shouldn't need this.
+  // stream << "::" << keywordString(util::toString(Datatype(op->var.type()).getKind()));
+  stream << " in ";
+  // This functionality (shifting to one based indices), should definitely be factored out.
+  if(isa<Literal>(op->start)){
+    auto lit = op->start.as<Literal>();
+    if(lit->type.getKind() == Int32) {
+      auto val = lit->getValue<int>();
+      stream << val + 1;
+    }
+    else if(lit->type.getKind() == UInt32) {
+        auto val = lit->getValue<unsigned int>();
+        stream << val + 1;
+    }
+    else
+      op->start.accept(this);
+    }
   else {
-    stream << " += ";
-    op->increment.accept(this);
+    op->start.accept(this);
   }
-  stream << ") {\n";
+  stream << keywordString(":");
+  auto lit = op->increment.as<Literal>();
+  if (lit == nullptr || !((lit->type.isInt()  && lit->equalsScalar(1)) ||
+                         (lit->type.isUInt() && lit->equalsScalar(1)))) {
+    stream << ":";
+    op->increment.accept(this);
+    stream << ":";
+  }
+  if(isa<Literal>(op->end)){
+    auto lit = op->end.as<Literal>();
+    if(lit->type.getKind() == Int32) {
+      auto val = lit->getValue<int>();
+      stream << val + 1;
+    }
+    else if(lit->type.getKind() == UInt32) {
+        auto val = lit->getValue<unsigned int>();
+        stream << val + 1;
+    }
+    else
+      op->end.accept(this);
+    }
+  else {
+    op->end.accept(this);
+  }
+
+  stream << "\n";
 
   op->contents.accept(this);
   doIndent();
-  stream << "}";
+  stream << "end";
   stream << endl;
 }
 
@@ -461,8 +530,15 @@ void CodeGen_C::visit(const While* op) {
     out << genVectorizePragma(op->vec_width);
     out << "\n";
   }
-
-  IRPrinter::visit(op);
+  doIndent();
+  stream << keywordString("while ");
+  parentPrecedence = Precedence::TOP;
+  op->cond.accept(this);
+  stream << "\n";
+  op->contents.accept(this);
+  doIndent();
+  stream << "end";
+  stream << endl;
 }
 
 void CodeGen_C::visit(const GetProperty* op) {
@@ -477,7 +553,7 @@ void CodeGen_C::visit(const Min* op) {
     return;
   }
   for (size_t i=0; i<op->operands.size()-1; i++) {
-    stream << "TACO_MIN(";
+    stream << "min(";
     op->operands[i].accept(this);
     stream << ",";
   }
@@ -493,7 +569,7 @@ void CodeGen_C::visit(const Max* op) {
     return;
   }
   for (size_t i=0; i<op->operands.size()-1; i++) {
-    stream << "TACO_MAX(";
+    stream << "max(";
     op->operands[i].accept(this);
     stream << ",";
   }
@@ -502,17 +578,14 @@ void CodeGen_C::visit(const Max* op) {
     stream << ")";
   }
 }
-
+// TODO:
 void CodeGen_C::visit(const Allocate* op) {
   string elementType = printCType(op->var.type(), false);
-
   doIndent();
   op->var.accept(this);
-  stream << " = (";
-  stream << elementType << "*";
-  stream << ")";
+  stream << " = ";
   if (op->is_realloc) {
-    stream << "realloc(";
+    stream << "resize!(";
     op->var.accept(this);
     stream << ", ";
   }
@@ -520,18 +593,15 @@ void CodeGen_C::visit(const Allocate* op) {
     // If the allocation was requested to clear the allocated memory,
     // use calloc instead of malloc.
     if (op->clear) {
-      stream << "calloc(1, ";
+      stream << "zeros(" << elementType << ", ";
     } else {
-      stream << "malloc(";
+      stream << "Vector{" << elementType << "}(";
     }
   }
-  stream << "sizeof(" << elementType << ")";
-  stream << " * ";
-  parentPrecedence = MUL;
   op->num_elements.accept(this);
   parentPrecedence = TOP;
-  stream << ");";
-    stream << endl;
+  stream << ")";
+  stream << endl;
 }
 
 void CodeGen_C::visit(const Sqrt* op) {
@@ -545,17 +615,108 @@ void CodeGen_C::visit(const Sqrt* op) {
 void CodeGen_C::visit(const Assign* op) {
   if (op->use_atomics) {
     doIndent();
-    stream << getAtomicPragma() << endl;
+    stream << getAtomicPragma();
   }
-  IRPrinter::visit(op);
+  doIndent();
+  op->lhs.accept(this);
+  parentPrecedence = Precedence::TOP;
+  bool printed = false;
+  if (simplify) {
+    if (isa<ir::Add>(op->rhs)) {
+      auto add = to<Add>(op->rhs);
+      if (add->a == op->lhs) {
+        const Literal* lit = add->b.as<Literal>();
+        if (lit != nullptr && ((lit->type.isInt()  && lit->equalsScalar(1)) ||
+                               (lit->type.isUInt() && lit->equalsScalar(1)))) {
+          stream << "++";
+        }
+        else {
+          stream << " += ";
+          add->b.accept(this);
+        }
+        printed = true;
+      }
+    }
+    else if (isa<Mul>(op->rhs)) {
+      auto mul = to<Mul>(op->rhs);
+      if (mul->a == op->lhs) {
+        stream << " *= ";
+        mul->b.accept(this);
+        printed = true;
+      }
+    }
+    else if (isa<BitOr>(op->rhs)) {
+      auto bitOr = to<BitOr>(op->rhs);
+      if (bitOr->a == op->lhs) {
+        stream << " |= ";
+        bitOr->b.accept(this);
+        printed = true;
+      }
+    }
+  }
+  if (!printed) {
+    stream << " = ";
+    op->rhs.accept(this);
+  }
+  stream << endl;
+}
+
+void CodeGen_C::visit(const Free* op) {
+  return;
+}
+
+void CodeGen_C::visit(const Continue*) {
+  doIndent();
+  stream << "continue" << endl;
+}
+
+void CodeGen_C::visit(const Break*) {
+  doIndent();
+  stream << "break" << endl;
+}
+
+void CodeGen_C::visit(const Print* op) {
+  doIndent();
+  stream << "printf(";
+  stream << "\"" << op->fmt << "\"";
+  for (auto e: op->params) {
+    stream << ", ";
+    e.accept(this);
+  }
+  stream << ")";
+  stream << endl;
+}
+
+void CodeGen_C::visit(const Sort* op) {
+  doIndent();
+  stream << "sort(";
+  parentPrecedence = Precedence::CALL;
+  // This should be an acceptJoin, but I can't immediately figure out how to call it from here, so just copying for now.
+  if (op->args.size() > 0) {
+    op->args[0].accept(this);
+  }
+  for (size_t i=1; i < op->args.size(); ++i) {
+    stream << ", ";
+    op->args[i].accept(this);
+  }
+  stream << ")";
+  stream << endl;
 }
 
 void CodeGen_C::visit(const Store* op) {
   if (op->use_atomics) {
     doIndent();
-    stream << getAtomicPragma() << endl;
+    stream << getAtomicPragma();
   }
-  IRPrinter::visit(op);
+  doIndent();
+  op->arr.accept(this);
+  stream << "[";
+  parentPrecedence = Precedence::TOP;
+  op->loc.accept(this);
+  stream << "] = ";
+  parentPrecedence = Precedence::TOP;
+  op->data.accept(this);
+  stream << endl;
 }
 
 void CodeGen_C::generateShim(const Stmt& func, stringstream &ret) {
